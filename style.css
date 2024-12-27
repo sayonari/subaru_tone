@@ -1,0 +1,71 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    font-family: sans-serif;
+}
+
+.header {
+    background: white;
+    padding: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    position: relative;
+}
+
+.header h1 {
+    font-size: 1.5em;
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.developer-info {
+    font-size: 0.9em;
+    text-align: right;
+    margin-left: auto;
+}
+
+.developer-info a {
+    text-decoration: none;
+    color: #333;
+}
+
+.developer-info a:hover {
+    text-decoration: underline;
+}
+
+.inspired {
+    font-size: 0.8em;
+    margin-top: 2px;
+}
+
+.pitch-display {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 1.6em;
+    margin: 5px 0;
+}
+
+#instrument {
+    flex-grow: 1;
+    background: linear-gradient(to bottom, 
+        #ffffff,  /* 高音 - 白 */
+        #ffd700,  /* 中高音 - 黄色 */
+        #ff3333,  /* 中低音 - 赤 */
+        #87ceeb   /* 低音 - 水色 */
+    );
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
