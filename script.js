@@ -73,10 +73,10 @@ function stopAudio() {
 }
 
 // ピッチ計算
-function calculateDetune(x, width) {
-    const normalizedX = Math.max(0, Math.min(1, x / width));
+function calculateDetune(y, height) {
+    const normalizedY = 1 - Math.max(0, Math.min(1, y / height));
     const semitoneRange = 24; // 2オクターブ（上12, 下12）
-    const cents = (normalizedX * semitoneRange - semitoneRange / 2) * 100;
+    const cents = (normalizedY * semitoneRange - semitoneRange / 2) * 100;
     return cents;
 }
 
@@ -84,7 +84,7 @@ function calculateDetune(x, width) {
 instrument.addEventListener('mousedown', async (e) => {
     try {
         const rect = e.target.getBoundingClientRect();
-        const detuneValue = calculateDetune(e.clientX - rect.left, rect.width);
+        const detuneValue = calculateDetune(e.clientY - rect.top, rect.height);
         await playAudio(detuneValue);
         updateDisplay(detuneValue);
     } catch (error) {
@@ -95,7 +95,7 @@ instrument.addEventListener('mousedown', async (e) => {
 instrument.addEventListener('mousemove', async (e) => {
     if (isPlaying) {
         const rect = e.target.getBoundingClientRect();
-        const detuneValue = calculateDetune(e.clientX - rect.left, rect.width);
+        const detuneValue = calculateDetune(e.clientY - rect.top, rect.height);
         await playAudio(detuneValue);
         updateDisplay(detuneValue);
     }
@@ -107,7 +107,7 @@ instrument.addEventListener('mouseup', stopAudio);
 instrument.addEventListener('touchstart', async (e) => {
     try {
         const rect = e.target.getBoundingClientRect();
-        const detuneValue = calculateDetune(e.touches[0].clientX - rect.left, rect.width);
+        const detuneValue = calculateDetune(e.touches[0].clientY - rect.top, rect.height);
         await playAudio(detuneValue);
         updateDisplay(detuneValue);
     } catch (error) {
@@ -118,7 +118,7 @@ instrument.addEventListener('touchstart', async (e) => {
 instrument.addEventListener('touchmove', async (e) => {
     if (isPlaying) {
         const rect = e.target.getBoundingClientRect();
-        const detuneValue = calculateDetune(e.touches[0].clientX - rect.left, rect.width);
+        const detuneValue = calculateDetune(e.touches[0].clientY - rect.top, rect.height);
         await playAudio(detuneValue);
         updateDisplay(detuneValue);
     }
