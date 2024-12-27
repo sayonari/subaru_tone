@@ -93,12 +93,17 @@ function updatePitchSmooth(detuneValue) {
     detuneParam.linearRampToValueAtTime(detuneValue, audioCtx.currentTime + 0.05); // 補間0.05秒
 }
 
+// ピッチ即時更新
+function setPitchImmediately(detuneValue) {
+    detuneParam.setValueAtTime(detuneValue, audioCtx.currentTime); // 即時更新
+}
+
 // マウスイベント
 instrument.addEventListener('mousedown', async (e) => {
     await startAudio();
     const rect = e.target.getBoundingClientRect();
     const detuneValue = calculateDetune(e.clientY - rect.top, rect.height);
-    updatePitchSmooth(detuneValue);
+    setPitchImmediately(detuneValue); // クリック時は即時設定
     updateDisplay(detuneValue);
 });
 
@@ -106,7 +111,7 @@ instrument.addEventListener('mousemove', (e) => {
     if (isPlaying) {
         const rect = e.target.getBoundingClientRect();
         const detuneValue = calculateDetune(e.clientY - rect.top, rect.height);
-        updatePitchSmooth(detuneValue);
+        updatePitchSmooth(detuneValue); // ドラッグ時は補間処理
         updateDisplay(detuneValue);
     }
 });
@@ -118,7 +123,7 @@ instrument.addEventListener('touchstart', async (e) => {
     await startAudio();
     const rect = e.target.getBoundingClientRect();
     const detuneValue = calculateDetune(e.touches[0].clientY - rect.top, rect.height);
-    updatePitchSmooth(detuneValue);
+    setPitchImmediately(detuneValue); // タッチ時は即時設定
     updateDisplay(detuneValue);
 });
 
@@ -126,7 +131,7 @@ instrument.addEventListener('touchmove', (e) => {
     if (isPlaying) {
         const rect = e.target.getBoundingClientRect();
         const detuneValue = calculateDetune(e.touches[0].clientY - rect.top, rect.height);
-        updatePitchSmooth(detuneValue);
+        updatePitchSmooth(detuneValue); // 移動時は補間処理
         updateDisplay(detuneValue);
     }
 });
