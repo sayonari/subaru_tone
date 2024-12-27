@@ -4,6 +4,8 @@ body {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    overflow: hidden;
+    touch-action: none;
     font-family: sans-serif;
 }
 
@@ -59,11 +61,11 @@ body {
 
 #instrument {
     flex-grow: 1;
-    background: linear-gradient(to bottom, 
-        #ffffff,  /* 高音 - 白 */
-        #ffd700,  /* 中高音 - 黄色 */
+    background: linear-gradient(to right, 
+        #87ceeb,  /* 低音 - 水色 */
         #ff3333,  /* 中低音 - 赤 */
-        #87ceeb   /* 低音 - 水色 */
+        #ffd700,  /* 中高音 - 黄色 */
+        #ffffff   /* 高音 - 白 */
     );
     cursor: pointer;
     user-select: none;
