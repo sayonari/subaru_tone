@@ -19,6 +19,18 @@ function centToFrequency(cents) {
 
 // 周波数から音階名を取得する関数
 function getNoteName(frequency) {
+    // 特殊なケースを先に処理
+    if (frequency >= 509) {
+        // 509Hz以上はC5以上
+        const noteNumber = Math.round(12 * Math.log2(frequency / BASE_FREQUENCY));
+        const noteName = NOTE_NAMES[(noteNumber % 12 + 12) % 12];
+        return `${noteName}5`;
+    } else if (frequency >= 254.7 && frequency < BASE_FREQUENCY) {
+        // 254.7Hz以上261.63Hz未満はC4として扱う
+        return 'C4';
+    }
+
+    // 通常のケース
     const noteNumber = Math.round(12 * Math.log2(frequency / BASE_FREQUENCY));
     const octave = Math.floor(Math.log2(frequency / BASE_FREQUENCY)) + 4;
     const noteName = NOTE_NAMES[(noteNumber % 12 + 12) % 12];
