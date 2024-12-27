@@ -9,6 +9,7 @@ const BASE_FREQUENCY = 261.63; // C4 (ド)
 let audioCtx = null;
 let sourceNode = null;
 let gainNode = null;
+let detuneParam = null;
 let buffer = null;
 let isPlaying = false;
 
@@ -19,18 +20,14 @@ function centToFrequency(cents) {
 
 // 周波数から音階名を取得する関数
 function getNoteName(frequency) {
-    // 特殊なケースを先に処理
     if (frequency >= 509) {
-        // 509Hz以上はC5以上
         const noteNumber = Math.round(12 * Math.log2(frequency / BASE_FREQUENCY));
         const noteName = NOTE_NAMES[(noteNumber % 12 + 12) % 12];
         return `${noteName}5`;
     } else if (frequency >= 254.7 && frequency < BASE_FREQUENCY) {
-        // 254.7Hz以上261.63Hz未満はC4として扱う
         return 'C4';
     }
 
-    // 通常のケース
     const noteNumber = Math.round(12 * Math.log2(frequency / BASE_FREQUENCY));
     const octave = Math.floor(Math.log2(frequency / BASE_FREQUENCY)) + 4;
     const noteName = NOTE_NAMES[(noteNumber % 12 + 12) % 12];
@@ -47,44 +44,35 @@ async function initAudio() {
     }
 }
 
-// 再生開始とピッチ変更
-async function playAudio(detuneValue) {
+// 再生開始
+async function startAudio() {
     if (!audioCtx) await initAudio();
-    
-    // 前の音を停止
-    if (sourceNode) {
-        sourceNode.stop();
-        sourceNode.disconnect();
-    }
-    if (gainNode) {
-        gainNode.disconnect();
-    }
+    if (isPlaying) return;
 
     sourceNode = audioCtx.createBufferSource();
     gainNode = audioCtx.createGain();
-
     sourceNode.buffer = buffer;
     sourceNode.loop = true;
-    sourceNode.detune.value = detuneValue;
+
+    // Detuneの調整パラメータ取得
+    detuneParam = sourceNode.detune;
     sourceNode.connect(gainNode);
     gainNode.connect(audioCtx.destination);
     sourceNode.start();
     isPlaying = true;
 }
 
+// 音停止
 function stopAudio() {
-    if (!isPlaying) return;
-    if (sourceNode) {
+    if (isPlaying) {
         sourceNode.stop();
         sourceNode.disconnect();
-    }
-    if (gainNode) {
         gainNode.disconnect();
+        isPlaying = false;
     }
-    isPlaying = false;
 }
 
-// ピッチ計算
+// デチューン計算
 function calculateDetune(y, height) {
     const normalizedY = 1 - Math.max(0, Math.min(1, y / height));
     const semitoneRange = 24; // 2オクターブ（上12, 下12）
@@ -92,23 +80,33 @@ function calculateDetune(y, height) {
     return cents;
 }
 
+// 表示更新
+function updateDisplay(detuneValue) {
+    const frequency = centToFrequency(detuneValue);
+    frequencyDisplay.textContent = `${Math.round(frequency)} Hz`;
+    noteDisplay.textContent = getNoteName(frequency);
+}
+
+// ピッチ補間更新
+function updatePitchSmooth(detuneValue) {
+    detuneParam.cancelScheduledValues(audioCtx.currentTime);
+    detuneParam.linearRampToValueAtTime(detuneValue, audioCtx.currentTime + 0.05); // 補間0.05秒
+}
+
 // マウスイベント
 instrument.addEventListener('mousedown', async (e) => {
-    try {
-        const rect = e.target.getBoundingClientRect();
-        const detuneValue = calculateDetune(e.clientY - rect.top, rect.height);
-        await playAudio(detuneValue);
-        updateDisplay(detuneValue);
-    } catch (error) {
-        console.error('Error in mousedown:', error);
-    }
+    await startAudio();
+    const rect = e.target.getBoundingClientRect();
+    const detuneValue = calculateDetune(e.clientY - rect.top, rect.height);
+    updatePitchSmooth(detuneValue);
+    updateDisplay(detuneValue);
 });
 
-instrument.addEventListener('mousemove', async (e) => {
+instrument.addEventListener('mousemove', (e) => {
     if (isPlaying) {
         const rect = e.target.getBoundingClientRect();
         const detuneValue = calculateDetune(e.clientY - rect.top, rect.height);
-        await playAudio(detuneValue);
+        updatePitchSmooth(detuneValue);
         updateDisplay(detuneValue);
     }
 });
@@ -117,32 +115,20 @@ instrument.addEventListener('mouseup', stopAudio);
 
 // タッチイベント
 instrument.addEventListener('touchstart', async (e) => {
-    try {
-        const rect = e.target.getBoundingClientRect();
-        const detuneValue = calculateDetune(e.touches[0].clientY - rect.top, rect.height);
-        await playAudio(detuneValue);
-        updateDisplay(detuneValue);
-    } catch (error) {
-        console.error('Error in touchstart:', error);
-    }
+    await startAudio();
+    const rect = e.target.getBoundingClientRect();
+    const detuneValue = calculateDetune(e.touches[0].clientY - rect.top, rect.height);
+    updatePitchSmooth(detuneValue);
+    updateDisplay(detuneValue);
 });
 
-instrument.addEventListener('touchmove', async (e) => {
+instrument.addEventListener('touchmove', (e) => {
     if (isPlaying) {
         const rect = e.target.getBoundingClientRect();
         const detuneValue = calculateDetune(e.touches[0].clientY - rect.top, rect.height);
-        await playAudio(detuneValue);
+        updatePitchSmooth(detuneValue);
         updateDisplay(detuneValue);
     }
 });
 
 instrument.addEventListener('touchend', stopAudio);
-
-// 表示更新
-function updateDisplay(detuneValue) {
-    const frequency = centToFrequency(detuneValue);
-    frequencyDisplay.textContent = `${Math.round(frequency)} Hz`;
-    noteDisplay.textContent = getNoteName(frequency);
-    
-    console.log(`Cents: ${detuneValue.toFixed(1)}, Frequency: ${frequency.toFixed(1)}Hz`);
-}
